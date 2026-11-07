@@ -1,0 +1,32 @@
+# SmartBoard Classroom — dependências do notebook
+# Python do projeto: 3.11 no .venv (D009).
+# Versões fixadas na etapa 1.0 em 2026-11-06 (CLAUDE.md §4.4). Lista completa com
+# dependências indiretas: requirements.lock.txt (gerado pelo scripts/setup_mac.sh).
+
+# Fase 1 — servidor HTTPS + WebSocket (D003) e certificado local (D004)
+aiohttp==3.14.5
+cryptography==50.0.2
+
+# Fase 1 — janela do cursor. Só os módulos essenciais do Qt (QtCore/QtGui/QtWidgets),
+# sem WebEngine/PDF/Addons (D010).
+PySide6-Essentials==6.12.0
+
+# Testes
+pytest==9.2.0
+pytest-aiohttp==1.1.1
+
+# Etapa 1.5 — MediaPipe no notebook (D013): o celular envia quadros JPEG.
+# O mediapipe traz o OpenCV (opencv-contrib-python), usado para decodificar o JPEG
+# e, na Fase 2, para a homografia. Não instalar opencv-python junto: os dois
+# pacotes fornecem o mesmo módulo cv2 e entram em conflito.
+# Rodas verificadas em 2026-11-06 para Python 3.11 em macOS arm64 e Windows x64
+# (≈ 110 MB com as dependências). numpy 2.5 já não suporta Python 3.11.
+mediapipe==1.2.2
+opencv-contrib-python==5.0.0.93
+numpy==2.4.6
+
+# Abrir com dois cliques (D025): QR code com o endereço do celular na lousa.
+# segno: BSD-3, Python puro, sem dependências, ~76 KB, mantido (1.6.6, 2026).
+# Alternativa avaliada: qrcode (precisa de Pillow para imagem). Sem segno, a lousa
+# mostra só o endereço.
+segno==1.6.6

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SmartBoard — Câmera</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/styles/app.css">
+</head>
+<body>
+  <main>
+    <h1>SmartBoard Classroom</h1>
+    <p class="subtitle">Câmera do celular · etapa 1.5</p>
+
+    <dl class="status">
+      <dt>Contexto seguro</dt><dd id="secure">—</dd>
+      <dt>Câmera</dt><dd id="camera">não iniciada</dd>
+      <dt>Conexão</dt><dd id="conn" class="wait">Desconectado</dd>
+      <dt></dt><dd id="conn-detail" class="detail"></dd>
+      <dt>RTT</dt><dd id="rtt">—</dd>
+      <dt>MediaPipe</dt><dd id="model">—</dd>
+      <dt>Quadros</dt><dd id="fps">—</dd>
+      <dt>Indicador</dt><dd id="hand">—</dd>
+      <dt>Tela ativa</dt><dd id="wake">—</dd>
+    </dl>
+
+    <p id="error" class="error" hidden></p>
+
+    <button id="start" type="button">Iniciar câmera e conectar</button>
+
+    <div class="stage">
+      <video id="preview" playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+  </main>
+  <script type="module" src="/static/scripts/app.js"></script>
+</body>
+</html>

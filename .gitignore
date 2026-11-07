@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# certificado e chave gerados localmente (D004): nunca versionar
+certs/
+# logs de sessão (medições locais)
+logs/
+# anotações das aulas (dados do professor, D027)
+anotacoes/
+preferencias.json
+calibracao.json

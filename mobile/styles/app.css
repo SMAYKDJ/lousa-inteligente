@@ -1,0 +1,83 @@
+:root {
+  color-scheme: dark;
+  --bg: #12161c;
+  --fg: #e8ecf1;
+  --muted: #8a94a3;
+  --ok: #3ccf8e;
+  --wait: #f0b429;
+  --bad: #ff6b6b;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+main {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+}
+
+h1 { font-size: 1.35rem; margin: 0; }
+.subtitle { color: var(--muted); margin: 0.25rem 0 1.25rem; }
+
+.status {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+}
+.status dt { color: var(--muted); }
+.status dd { margin: 0; font-weight: 600; }
+.status .detail { font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+
+.ok { color: var(--ok); }
+.wait { color: var(--wait); }
+.bad { color: var(--bad); }
+
+.error {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid var(--bad);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+button {
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 0.9rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: #2f6fed;
+  color: #fff;
+  font-weight: 600;
+}
+button:disabled { opacity: 0.5; }
+
+/* Vídeo e desenho da mão sobrepostos, com a mesma proporção do frame. */
+.stage {
+  position: relative;
+  margin-top: 1rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #000;
+}
+.stage video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
