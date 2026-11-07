@@ -115,6 +115,9 @@ class HandState:
     pinch: float | None = None
     # Pose do outro reconhecimento (D022: "kit" × "legacy"), só para comparar no log.
     pose_alt: str | None = None
+    # Os 21 pontos da mão em camera_norm (D036), só no notebook: desenho do esqueleto
+    # na janela da câmera e lado da mão (palma/dorso).
+    landmarks: tuple[IndexTip, ...] | None = None
 
 
 @dataclass(frozen=True)

@@ -5,7 +5,9 @@ Mostra, na tela do notebook (não na lousa), o último quadro processado com:
 - os cantos já capturados na calibração (verde, numerados);
 - depois de calibrar, o contorno onde o sistema acha que está a área
   projetada (amarelo): a homografia inversa aplicada aos cantos da superfície;
-- os marcadores ArUco detectados (azul, com o id) — D015.
+- os marcadores ArUco detectados (azul, com o id) — D015;
+- o esqueleto de cada mão (os 21 pontos ligados, uma cor por dedo), com qual mão é
+  e se a câmera vê a palma ou o dorso — D036.
 
 Serve para posicionar a câmera e entender calibrações ruins. A imagem só
 existe em memória e na tela; nunca é gravada (CLAUDE.md §11).
@@ -25,6 +27,17 @@ OUTLINE = QColor("#f0b429")
 TEXT = QColor("#e8ecf1")
 MARKER = QColor("#4cc9f0")
 OTHER = QColor("#8a94a3")
+
+# Esqueleto da mão (D036): as ligações dos 21 pontos do MediaPipe, uma cor por dedo.
+FINGERS = (
+    ((0, 1, 2, 3, 4), QColor("#f4a261")),       # polegar
+    ((0, 5, 6, 7, 8), QColor("#ff5a5f")),       # indicador
+    ((9, 10, 11, 12), QColor("#f0b429")),       # médio
+    ((13, 14, 15, 16), QColor("#3ccf8e")),      # anelar
+    ((0, 17, 18, 19, 20), QColor("#4cc9f0")),   # mindinho
+)
+PALM_LINE = ((5, 9), (9, 13), (13, 17))
+TIPS = (4, 8, 12, 16, 20)
 
 
 class CameraPreviewWindow(QWidget):
@@ -56,6 +69,37 @@ class CameraPreviewWindow(QWidget):
             h, w = rgb.shape[:2]
             self._image = QImage(rgb.data, w, h, 3 * w, QImage.Format.Format_RGB888).copy()
         self.update()
+
+    def _draw_skeleton(self, painter: QPainter, rect: QRectF, hand) -> None:
+        from desktop.vision.hand_side import hand_side, true_hand
+        pts = [self._to_px(rect, p.x, p.y) for p in hand.landmarks]
+        for chain, color in FINGERS:
+            painter.setPen(QPen(color, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+            for a, b in zip(chain, chain[1:]):
+                painter.drawLine(pts[a], pts[b])
+        painter.setPen(QPen(QColor("#e8ecf1"), 2))
+        for a, b in PALM_LINE:
+            painter.drawLine(pts[a], pts[b])
+        painter.setPen(Qt.PenStyle.NoPen)
+        for i, pt in enumerate(pts):
+            painter.setBrush(QColor("#ffffff"))
+            painter.drawEllipse(pt, 5 if i in TIPS else 3.5, 5 if i in TIPS else 3.5)
+        label = getattr(getattr(hand, "handedness", None), "value", None)
+        w = self._image.width() if self._image is not None else 1
+        h = self._image.height() if self._image is not None else 1
+        side = hand_side(hand.landmarks, label, w, h)
+        who = true_hand(label)
+        text = " · ".join(t for t in (who, side) if t)
+        if text:
+            font = painter.font()
+            font.setBold(True)
+            painter.setFont(font)
+            painter.setPen(QColor("#000000"))
+            painter.drawText(pts[0] + QPointF(-39, 25), text)
+            painter.setPen(QColor("#ffffff"))
+            painter.drawText(pts[0] + QPointF(-40, 24), text)
+            font.setBold(False)
+            painter.setFont(font)
 
     def _draw_qr(self, painter: QPainter, matrix, url: str) -> None:
         w, h = self.width(), self.height()
@@ -145,8 +189,14 @@ class CameraPreviewWindow(QWidget):
             painter.drawPolygon(poly)
             painter.drawText(poly.boundingRect().center() + QPointF(-4, 4), str(marker_id))
 
-        # Todas as mãos vistas (cinza) e a escolhida para o cursor (vermelho).
+        # Esqueleto de cada mão vista, com palma/dorso (D036).
         candidates = getattr(self._board, "last_candidates", ())
+        skeletons = [h for h in candidates if getattr(h, "landmarks", None)] or (
+            [self._hand] if self._hand is not None and getattr(self._hand, "landmarks", None) else [])
+        for hand_state in skeletons:
+            self._draw_skeleton(painter, rect, hand_state)
+
+        # Todas as mãos vistas (cinza) e a escolhida para o cursor (vermelho).
         for other in candidates:
             if other.index_tip is not None:
                 painter.setPen(QPen(OTHER, 2))

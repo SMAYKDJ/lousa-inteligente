@@ -458,3 +458,13 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
 - **D034:** marcadores não vistos nos 6 s após conectar (celular ainda sendo posicionado) → `CALIB_AUTO_WAIT_S` = 20 s; aviso indica a tecla C. Reaproveitamento funcionou (sem toque).
 - **D035:** ruído da palma mudava o tamanho em ±5% só ao mover (22 de 26 pegadas) → zona morta de 8% (`RESIZE_SIZE_DEADZONE`); alcance pequeno (palma 28 → 40 px = 1,45×) → ganho 1,8.
 - **D030:** cantos voltaram 2× enquanto a mão segurava desenhos perto da câmera → vigilância da cena ignorada enquanto um desenho está seguro ou em confirmação.
+
+## D036 — Esqueleto da mão na janela da câmera, com palma × dorso
+
+- **Pedido do usuário (2026-11-07 20:46):** testar como na demonstração do open-source-hands: a mão com todos os pontos marcados, de frente (palma) ou de costas (dorso).
+- **Decisão:** a janela da câmera (no notebook, não na lousa) desenha o **esqueleto de cada mão**: os 21 pontos do MediaPipe ligados, uma cor por dedo (polegar laranja, indicador vermelho, médio amarelo, anelar verde, mindinho azul), pontas maiores, e embaixo do pulso **qual mão é** e se a câmera vê a **palma**, o **dorso** ou a mão **de lado**.
+  - Os 21 pontos passam a ir no `HandState` (`landmarks`), só no notebook; não trafegam pela rede nem vão ao log.
+  - Palma × dorso: sinal do produto vetorial (pulso→base do indicador) × (pulso→base do mindinho), combinado com qual mão é. O MediaPipe nomeia a mão supondo imagem espelhada; a câmera traseira não espelha (`CAMERA_MIRRORED = False`), então "Left" é a direita de verdade.
+- **Limites:** é diagnóstico; nada na lousa depende disso. Se o nome da mão ou palma/dorso aparecer trocado no teste real, é só inverter `CAMERA_MIRRORED`.
+- **Testes:** palma/dorso para as duas mãos, câmera espelhada, mão de lado, os 21 pontos saindo do MediaPipe e o esqueleto desenhado na janela (cores conferidas por pixel). 503 testes passando.
+- **Status:** implementado; teste real pendente · **Data:** 2026-11-07

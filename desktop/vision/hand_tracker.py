@@ -161,7 +161,9 @@ def hands_from_result(landmarks: Sequence[Sequence[Any]], handedness: Sequence[S
                                palm=palm, palm_size_px=round(palm_size_px(palm, width, height), 2),
                                pose=pose,
                                openness=round(hand_openness(hand_landmarks, width, height), 3),
-                               pinch=round(pinch, 3), pose_alt=pose_alt))
+                               pinch=round(pinch, 3), pose_alt=pose_alt,
+                               landmarks=tuple(IndexTip(float(p.x), float(p.y), float(p.z))
+                                               for p in hand_landmarks)))
     return hands
 
 

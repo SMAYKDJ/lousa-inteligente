@@ -265,6 +265,14 @@ LAB_SUMMARY_S = 25.0
 GUIDED_INTRO_S = 5.0
 GUIDED_SUMMARY_S = 12.0
 
+# --- Esqueleto da mão na janela da câmera (D036) ---------------------------------
+
+#: A imagem do celular chega espelhada? A câmera traseira não espelha; a frontal, sim.
+#: O MediaPipe nomeia a mão supondo imagem espelhada, então isso decide palma × dorso.
+CAMERA_MIRRORED = False
+#: Abaixo disto (|produto vetorial| ÷ palma²) a mão está de lado: nem palma nem dorso.
+HAND_SIDE_EDGE = 0.25
+
 # --- Estudo do toque (etapa 5.3, tecla T) ---------------------------------------
 
 #: Rodadas (cada uma: encostado/no ar, parado/arrastando, em outro lugar da lousa).
