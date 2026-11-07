@@ -468,3 +468,12 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
 - **Limites:** é diagnóstico; nada na lousa depende disso. Se o nome da mão ou palma/dorso aparecer trocado no teste real, é só inverter `CAMERA_MIRRORED`.
 - **Testes:** palma/dorso para as duas mãos, câmera espelhada, mão de lado, os 21 pontos saindo do MediaPipe e o esqueleto desenhado na janela (cores conferidas por pixel). 503 testes passando.
 - **Status:** implementado; teste real pendente · **Data:** 2026-11-07
+
+## D037 — Celular: aba em segundo plano solta a conexão e a câmera
+
+- **Relato do usuário (2026-11-07 20:53):** ao abrir pelo QR, a página no celular dizia "Desconectado".
+- **Log (`session-20261107-205143`):** um celular **estava** conectado (20:52:04, câmera 720×1280), mas mandando **0 quadros/s** o tempo todo; a calibração não recebeu nenhum quadro. É o retrato de uma aba antiga em segundo plano: o navegador pausa a câmera dela, mas a conexão continuava aberta, ocupando a lousa. A aba nova (do QR) ainda não tinha tocado em "Iniciar" (a página começa mostrando "Desconectado") e, se tocasse, podia achar a câmera presa pela aba antiga.
+- **Decisão (cliente 0.4.1):**
+  - Aba escondida → fecha a conexão e solta a câmera; ao voltar para ela, a página recarrega.
+  - Antes de tocar em Iniciar, o estado mostra "Toque em Iniciar" em vez de "Desconectado".
+- **Status:** implementado; teste real pendente · **Data:** 2026-11-07

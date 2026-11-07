@@ -4,11 +4,11 @@
 //   local (&mode=local): roda o MediaPipe aqui e envia só a ponta do
 //   indicador (hand_tracking), como na etapa 1.4 (D002).
 
-import { cameraAvailable, openRearCamera, CameraError } from "./camera.js";
+import { cameraAvailable, closeCamera, openRearCamera, CameraError } from "./camera.js";
 import { FrameSender, MainThreadEncoder, WorkerEncoder } from "./frame_sender.js";
 import { ConnState, SmartboardSocket, defaultSocketUrl } from "./websocket_client.js";
 
-const CLIENT_VERSION = "0.4.0";
+const CLIENT_VERSION = "0.4.1";
 const STATUS_INTERVAL_MS = 1000;
 const FPS_WINDOW_MS = 1000;
 
@@ -232,6 +232,7 @@ async function start() {
     onServerError: (code, detail) => showError(`Notebook recusou uma mensagem: ${code} — ${detail}`),
   });
   socket.start();
+  releaseWhenHidden(socket, camera.stream);
   // Status a cada segundo, com as métricas que o notebook grava no log de sessão.
   setInterval(() => socket.send(buildStatus()), STATUS_INTERVAL_MS);
 
@@ -304,5 +305,22 @@ async function startLocalTracking(socket) {
   startTrackingLoop(tracker, socket, INDEX_TIP, HAND_CONNECTIONS);
 }
 
+// Aba em segundo plano (D037): o navegador para a câmera dela, mas a conexão continuava
+// aberta e "ocupava" a lousa com 0 quadros/s, e a câmera ficava presa para a aba nova
+// (ex.: aberta pelo QR). Escondida → solta conexão e câmera; ao voltar, recarrega.
+function releaseWhenHidden(socket, stream) {
+  let released = false;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && !released) {
+      released = true;
+      socket.stop();
+      closeCamera(stream);
+    } else if (!document.hidden && released) {
+      location.reload();
+    }
+  });
+}
+
+setText(ui.conn, "Toque em Iniciar", "wait");
 setText(ui.secure, cameraAvailable() ? "Sim (HTTPS)" : "NÃO — câmera bloqueada", cameraAvailable() ? "ok" : "bad");
 ui.start.onclick = start;
