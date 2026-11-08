@@ -491,3 +491,14 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
   - Enquanto as duas mãos seguram, a confirmação de 1 s não corre; se uma mão sai e a outra volta a apontar (confirma), o zoom é registrado (`draw_zoom`) antes de fechar.
 - **Testes:** dois indicadores só fazem zoom quando permitido; outra mão assumindo não redimensiona; teste da janela com o desenho seguro, a segunda mão (palma menor) entrando e as duas se afastando → desenho maior, `draw_zoom` no log, e não encolhe ao soltar. 506 testes passando.
 - **Status:** implementado; teste real pendente · **Data:** 2026-11-07
+
+### Resultado do estudo do toque (D029) — teste real 2026-11-07 21:28
+
+- Sessão `session-20261107-212518`, gravação `landmarks-20261107-212801` · 15 etapas, 95–124 quadros cada. Calibração por cantos antes do estudo: erro 9 px (0,48%).
+- **Encostado × no ar a ~5 cm:** a profundidade da ponta do dedo separa bem (0,94–0,96, coerente nas 3 rodadas); `ponta_curta` 0,80–0,86.
+- **Encostado × no ar a ~2 cm:** nenhum sinal passa do critério (separação ≥ 0,8 e todas as rodadas coerentes). O melhor, a profundidade da ponta arrastando, chega a 0,82 mas só arrastando; parado fica em 0,53.
+- **Conclusão:** só com a câmera do celular não dá para saber com segurança se o dedo encostou na lousa ou está a 2 cm dela. A caneta continua descendo pela pose da mão. Profundidade da ponta poderia, no máximo, ajudar a recusar o dedo bem afastado (≥ 5 cm), com um único teste até agora.
+- **Observado na mesma sessão:**
+  - a calibração automática não viu os marcadores nos 20 s e caiu para os cantos: em 367 verificações, só 13 viram algum marcador;
+  - durante o estudo, um falso "celular mexeu" (resposta 0,11, perto do mínimo 0,08) deixou os cantos visíveis por 139 s.
+  - Os dois ficam para investigar.
