@@ -1081,7 +1081,11 @@ class CursorWindow(QWidget):
                 s = self._surface_point(c.index_tip)
                 if s is not None:
                     hands.append((s[0], s[1], c.pose, pinch_strength(c.pinch)))
-        self._two_hand_zoom = self._zoom.update(hands)
+        # Dois indicadores num desenho selecionado = zoom de dois dedos (D038). Sem desenho
+        # selecionado, apontar com as duas mãos continua sendo só apontar.
+        holding = (self.sidebar is not None and self.sidebar.tool is Tool.SELECT
+                   and (self._tools.selected is not None or self._tools.resizing is not None))
+        self._two_hand_zoom = self._zoom.update(hands, allow_pointing=holding)
         pos = self.cursor_position()
         sample = None if pos is None else Sample(now, pos.x() / max(1, self.width()), pos.y() / max(1, self.height()),
                                                  self._pen_pose, pinch_strength(self._pinch), self._pinch)

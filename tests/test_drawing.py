@@ -312,3 +312,17 @@ def test_palm_noise_while_moving_does_not_resize():
     r = b.items[0]
     assert abs((r.b[0] - r.a[0]) - 0.2) < 1e-9
     assert not any(e["event"] == "draw_resize" for e in ev)
+
+
+def test_other_hand_taking_over_does_not_resize():
+    """1º relato do usuário (D038): a outra mão entrou, virou a escolhida (palma menor, perto
+    da lousa) e o desenho encolheu. Salto de palma de um quadro para o outro = troca de mão."""
+    b = Board(); b.add(Rectangle((0.4, 0.4), (0.6, 0.6), "#000", 0.006))
+    c = ToolController(b)
+    frames = [(True, (0.4, 0.5), 39.0)] * 10          # pega com a mão perto da câmera
+    frames += [(True, (0.4, 0.5), 30.0)] * 10         # outra mão (perto da lousa) assume
+    frames += [(False, (0.4, 0.5), 30.0)] * 45        # solta e confirma
+    ev = resize_run(c, frames)
+    r = b.items[0]
+    assert abs((r.b[0] - r.a[0]) - 0.2) < 1e-9
+    assert not any(e["event"] == "draw_resize" for e in ev)

@@ -107,3 +107,14 @@ def test_tools_two_hand_zoom_scales_selected_and_is_one_undo():
 
 def test_config_defaults_from_kit():
     assert config.SWIPE_DISTANCE == 0.20 and config.SWIPE_WINDOW_S == 0.38 and config.TAP_MAX_S == 0.35
+
+
+def test_two_pointing_fingers_zoom_only_when_allowed():
+    """D038: dois indicadores só pegam com um desenho selecionado."""
+    z = TwoHandZoom()
+    hands = [(0.4, 0.5, "pointing", 0.0), (0.6, 0.5, "pointing", 0.0)]
+    assert z.update(hands) is None  # apontar com as duas mãos, sem desenho: não é zoom
+    assert z.update(hands, allow_pointing=True) == 1.0
+    wider = [(0.3, 0.5, "pointing", 0.0), (0.7, 0.5, "pointing", 0.0)]
+    assert abs(z.update(wider, allow_pointing=True) - 2.0) < 1e-9
+    assert z.update([(0.3, 0.5, "pointing", 0.0), (0.7, 0.5, "open", 0.0)], allow_pointing=True) is None

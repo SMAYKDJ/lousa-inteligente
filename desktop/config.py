@@ -403,6 +403,9 @@ RESIZE_SIZE_STILL_TOLERANCE = 0.05
 #: Com "size": a palma de referência é medida este tempo depois de pegar o desenho
 #: (o dedo ainda está descendo sobre ele).
 SELECT_PALM_SETTLE_S = 0.15
+#: Com "size": variação da palma de um quadro para o outro acima disto é troca de mão,
+#: não movimento (D038). A 30 quadros/s, aproximar a mão muda bem menos que isso por quadro.
+RESIZE_PALM_JUMP = 0.18
 
 #: Duração do rastro do ponteiro (s).
 POINTER_TRAIL_S = 0.6

@@ -484,6 +484,48 @@ def test_two_hand_zoom_resizes_selected(board, monkeypatch):
     assert len(window.board.items) == 1
 
 
+def test_two_index_fingers_zoom_selected_drawing(board):
+    """D038: com o desenho seguro pelo indicador, a outra mão também apontando faz o zoom
+    de dois dedos (afastar amplia), sem o tamanho da palma da outra mão encolher o desenho."""
+    window, clock, log = board
+    open_and_pick(window, clock, Tool.BRUSH)
+    leave_panel(window, clock)
+    drag(window, clock, (900, 500), (1100, 500))
+    open_and_pick(window, clock, Tool.SELECT)
+    step(window, clock, (1500, 540), False)
+    window.overlay = True
+    seq = [5000]
+
+    def send(hands):
+        seq[0] += 1
+        states = tuple(HandState(present=True, handedness=Handedness.RIGHT if i == 0 else Handedness.LEFT,
+                                 confidence=0.9, index_tip=IndexTip(x, y, 0.0), pose=pose, pinch=1.0,
+                                 openness=1.2, palm_size_px=palm)
+                       for i, (x, y, pose, palm) in enumerate(hands))
+        window._on_hand_tracking(HandTrackingMessage(seq=seq[0], t_client_ms=1.0, hand=states[0],
+                                                     candidates=states if len(states) > 1 else ()))
+        clock.now += 0.033
+        window._ui_tick()
+
+    width0 = 200.0
+    for _ in range(8):  # uma mão (perto da câmera, palma 40) pega o traço
+        send([(1000 / 1920, 500 / 1080, "pointing", 40.0)])
+    assert window._tools.selected == 0
+    for i in range(20):  # a outra mão (perto da lousa, palma 28) entra apontando e as duas se afastam
+        d = 0.05 + 0.01 * i
+        send([(0.5 - d, 500 / 1080, "pointing", 40.0), (0.5 + d, 500 / 1080, "pointing", 28.0)])
+    assert window._two_hand_zoom is not None and window._two_hand_zoom > 2.0
+    xs = [p[0] * 1920 for p in window.board.items[0].points]
+    assert max(xs) - min(xs) > 2.0 * width0 * 0.9
+    for _ in range(45):  # soltou: uma mão aberta, parada 1 s confirma
+        send([(0.6, 500 / 1080, "open", 30.0)])
+    assert any(e == "draw_zoom" for e, _ in log)
+    assert window._tools.resizing is None and window._tools.selected is None
+    xs = [p[0] * 1920 for p in window.board.items[0].points]
+    assert max(xs) - min(xs) > 2.0 * width0 * 0.9  # ficou grande (não encolheu ao soltar)
+    assert len(window.board.items) == 1
+
+
 def test_gesture_lab_in_window(board):
     window, clock, log = board
     window.overlay = True

@@ -127,25 +127,32 @@ class MotionDetector:
 
 
 class TwoHandZoom:
-    """Duas mãos "pegando" (as duas em pinça ou as duas fechadas): a razão entre a distância
-    atual e a do início é o zoom. Devolve None quando não há pegada com duas mãos."""
+    """Duas mãos "pegando" (as duas em pinça, as duas fechadas ou, com um desenho
+    selecionado, os dois indicadores apontando — D038): a razão entre a distância atual e a
+    do início é o zoom. Devolve None quando não há pegada com duas mãos."""
 
     def __init__(self) -> None:
         self.grip = ""
         self.d0 = 0.0
 
     @staticmethod
-    def _grip(pose: str | None, pinch: float) -> str:
-        return "pinch" if pinch > 0.7 else "fist" if pose == "fist" else ""
+    def _grip(pose: str | None, pinch: float, pointing: bool = False) -> str:
+        if pinch > 0.7:
+            return "pinch"
+        if pose == "fist":
+            return "fist"
+        return "point" if pointing and pose == "pointing" else ""
 
-    def update(self, hands: list[tuple[float, float, str | None, float]]) -> float | None:
-        """`hands`: (x, y, pose, força da pinça) de cada mão, em surface_norm."""
+    def update(self, hands: list[tuple[float, float, str | None, float]],
+               allow_pointing: bool = False) -> float | None:
+        """`hands`: (x, y, pose, força da pinça) de cada mão, em surface_norm.
+        `allow_pointing`: dois indicadores também pegam (só com um desenho selecionado)."""
         if len(hands) < 2:
             self.grip = ""
             return None
         a, b = hands[0], hands[1]
-        g = self._grip(a[2], a[3])
-        g = g if g and g == self._grip(b[2], b[3]) else ""
+        g = self._grip(a[2], a[3], allow_pointing)
+        g = g if g and g == self._grip(b[2], b[3], allow_pointing) else ""
         d = math.hypot(a[0] - b[0], a[1] - b[1])
         if g != self.grip:
             self.grip, self.d0 = g, d

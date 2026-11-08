@@ -149,6 +149,8 @@ class ToolController:
         if r is None:
             self._two_hand = None
             return []
+        if zoom is not None and r.get("confirm_only"):
+            r["still_since"] = now  # mãos ainda pegando: a confirmação de 1 s só conta depois
         if zoom is None:
             if self._two_hand is None:
                 return []
@@ -193,6 +195,12 @@ class ToolController:
         if palm is not None and now - g["since"] >= config.SELECT_PALM_SETTLE_S:
             if g["palm_ref"] is None:
                 g["palm_ref"] = g["palm"] = palm
+            elif abs(palm / max(g["palm"], 1e-6) - 1) > config.RESIZE_PALM_JUMP:
+                # Salto de um quadro para o outro: é outra mão (a outra entrou e virou a
+                # escolhida, ou o MediaPipe trocou as mãos), não a mesma mão se aproximando.
+                # Mantém o tamanho atual e passa a medir a partir desta mão (D038).
+                g["palm_ref"] *= palm / max(g["palm"], 1e-6)
+                g["palm"] = palm
             else:
                 g["palm"] += config.RESIZE_SMOOTHING * (palm - g["palm"])
                 ratio = g["palm"] / max(g["palm_ref"], 1e-6)
@@ -256,10 +264,17 @@ class ToolController:
 
     def _end_resize(self) -> list[dict]:
         r, self.resizing, self.selected = self.resizing, None, None
+        # Zoom de duas mãos ainda aberto (ex.: uma mão saiu e a outra voltou a apontar,
+        # o que confirma): registra o zoom antes de fechar (D038).
+        zoom = [] if self._two_hand is None else [{"event": "draw_zoom",
+                                                   "scale": round(self._two_hand["scale"], 2)}]
         self._two_hand = None
         self.board.end_group()
         if r is None:
-            return []
+            return zoom
+        return zoom + self._resize_events(r)
+
+    def _resize_events(self, r: dict) -> list[dict]:
         if r.get("confirm_only"):
             events = [{"event": "draw_move", "px": round(self._moved)}] if self._moved > 0 else []
             self._moved = 0.0

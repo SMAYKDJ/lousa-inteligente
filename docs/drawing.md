@@ -76,7 +76,8 @@ Pedido do usuário (2026-11-07 16:43 e 16:49), com a ferramenta Selecionar:
 - Sinal: tamanho aparente da palma (`palm_size_px`, pulso → base dos dedos, em px da câmera). Referência medida 0,15 s depois de pegar. Escala = (palma ÷ referência)^1,0, entre 20% e 500%, em torno do centro do desenho.
 - Mover e redimensionar numa pegada só é **uma** ação de Voltar.
 - Sem mão (mouse) ao soltar: confirma na hora.
-- Duas mãos (D024) continua valendo durante a confirmação.
+- Duas mãos (D024) continua valendo durante a confirmação. Com o desenho seguro, **dois indicadores apontando** também fazem esse zoom (D038).
+- Salto de mais de 18% na palma de um quadro para o outro = outra mão assumiu: o tamanho fica e a medida recomeça (D038).
 - O jeito anterior (soltar e abrir/fechar a mão) volta com `RESIZE_SIGNAL = "openness"`.
 - **Log:** `draw_move` e `draw_resize` com `signal: "size"`, `palm_ref` e `palm_end` (px).
 - **A observar no teste real:** quando a mão vem para a câmera, a ponta do dedo também muda de lugar na imagem (perspectiva), então o desenho pode andar um pouco junto com o zoom. Girar a mão muda a palma aparente. Mão fora do quadro (perto demais): o tamanho atual fica.

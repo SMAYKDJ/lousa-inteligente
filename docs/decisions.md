@@ -477,3 +477,17 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
   - Aba escondida → fecha a conexão e solta a câmera; ao voltar para ela, a página recarrega.
   - Antes de tocar em Iniciar, o estado mostra "Toque em Iniciar" em vez de "Desconectado".
 - **Status:** implementado; teste real pendente · **Data:** 2026-11-07
+
+## D038 — Dois indicadores num desenho selecionado: zoom, sem a palma da outra mão encolher
+
+- **Relato do usuário (2026-11-07 21:10):** com um desenho selecionado, ao colocar o segundo dedo para aumentar com os dois, assim que entrava o dedo mais longe da câmera a aplicação dava prioridade ao dedo mais perto da lousa e **reduzia** o desenho.
+- **Log (`session-20261107-210959`, sem gravação de landmarks):**
+  - Redimensionamento aos 204 s: **duas mãos visíveis em todos os quadros** de 202,8 a 209 s; palma de referência 39,3 px → final 30,6 px → desenho a 0,74×. O seletor de mãos (`hand_selection`) escolhe a mão mais perto da lousa, a de palma menor; o sinal de tamanho (D035) passou a ler a palma **dessa outra mão** e entendeu "mão foi para a lousa" → encolheu. Confirma o relato.
+  - Aos 186 s (0,53×, palma 44,9 → 28,9) só uma mão foi detectada: troca de identidade do MediaPipe com as mãos sobrepostas ou movimento real (sem landmarks gravados, não dá para afirmar).
+  - Dois indicadores apontando **não eram** gesto de zoom: o zoom de duas mãos (D024) só aceitava pinça ou punho.
+- **Decisão:**
+  - Com um desenho seguro ou em confirmação na ferramenta Selecionar, **dois indicadores apontando** também fazem o zoom de duas mãos (afastar amplia, aproximar reduz). Fora disso continua só pinça/punho, para não confundir com o professor apontando com as duas mãos.
+  - Salto da palma maior que 18% de um quadro para o outro (`RESIZE_PALM_JUMP`) é tratado como **troca de mão**, não como aproximação: o tamanho atual fica e a medida recomeça a partir da mão nova.
+  - Enquanto as duas mãos seguram, a confirmação de 1 s não corre; se uma mão sai e a outra volta a apontar (confirma), o zoom é registrado (`draw_zoom`) antes de fechar.
+- **Testes:** dois indicadores só fazem zoom quando permitido; outra mão assumindo não redimensiona; teste da janela com o desenho seguro, a segunda mão (palma menor) entrando e as duas se afastando → desenho maior, `draw_zoom` no log, e não encolhe ao soltar. 506 testes passando.
+- **Status:** implementado; teste real pendente · **Data:** 2026-11-07
