@@ -36,6 +36,16 @@ if [ "$(cat "$stamp" 2>/dev/null)" != "$current" ]; then
   fi
 fi
 
+# O PySide6 instalado no venv traz os plugins Qt em um diretório próprio.
+# Informe explicitamente esse caminho para o Cocoa no macOS.
+qt_plugins="$(.venv/bin/python -c 'from PySide6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath))' 2>/dev/null)"
+if [ -d "$qt_plugins/platforms" ]; then
+  export QT_PLUGIN_PATH="$qt_plugins"
+  export QT_QPA_PLATFORM_PLUGIN_PATH="$qt_plugins/platforms"
+else
+  echo "Aviso: plugins Qt não encontrados em: $qt_plugins" >&2
+fi
+
 .venv/bin/python -m desktop.main --overlay --screen auto "$@"
 status=$?
 if [ $status -ne 0 ]; then

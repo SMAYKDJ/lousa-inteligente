@@ -105,8 +105,8 @@ def protected_folder_problem(project_root, platform: str = sys.platform, home=No
         return None
     if relative.parts and relative.parts[0] in config.MACOS_PROTECTED_FOLDERS:
         return (f"O projeto está em ~/{relative.parts[0]}, uma pasta protegida do macOS. "
-                "Ali o Qt não encontra os próprios plugins e a janela não abre. "
-                "Mova o projeto, por exemplo para ~/Projetos, e rode scripts/setup_mac.sh de novo.")
+                "O Terminal/Python pode precisar de permissão em Ajustes do Sistema > Privacidade e Segurança. "
+                "Se a janela não abrir, autorize o Terminal e tente novamente.")
     return None
 
 
