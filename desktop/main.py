@@ -20,6 +20,7 @@ import time
 from dataclasses import dataclass
 
 from aiohttp import web
+from PySide6.QtCore import Qt
 
 from functools import partial
 
