@@ -14,6 +14,11 @@
 cd "$(dirname "$0")" || exit 1
 echo "SmartBoard Classroom — $(pwd)"
 
+# Evita que configurações Qt herdadas do Homebrew ou de outra instalação
+# apontem para plugins incompatíveis antes de o QApplication ser criado.
+unset QT_PLUGIN_PATH QT_QPA_PLATFORM_PLUGIN_PATH
+export QT_QPA_PLATFORM=cocoa
+
 if [ ! -x .venv/bin/python ]; then
   echo "Primeira vez: preparando o ambiente (pode levar alguns minutos)…"
   bash scripts/setup_mac.sh || { echo "Falhou a preparação. Envie esta tela ao suporte."; read -r -p "Enter para fechar"; exit 1; }
