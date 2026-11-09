@@ -255,6 +255,23 @@ def place_on_screen(window, screens, index: int | str | None, overlay: bool = Fa
     index = resolve_screen(screens, index)
     log.info("Lousa na tela %s", index if index is not None else "da janela")
     if overlay:
+        # Enquanto aguarda o celular, o QR fica em uma janela normal e menor.
+        # Assim o professor pode escolher outra janela sem a tela inteira ficar bloqueada.
+        if getattr(window, "waiting_for_phone", False):
+            # configure_overlay() já foi aplicado antes desta função; remova-o
+            # para que o cartão não ocupe nem capture a tela inteira.
+            window.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowTitleHint
+                                  | Qt.WindowType.WindowCloseButtonHint)
+            window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
+            window.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, False)
+            target = screens[index] if index is not None and 0 <= index < len(screens) else screens[0]
+            geo = target.availableGeometry()
+            width = min(760, max(520, int(geo.width() * 0.42)))
+            height = min(820, max(560, int(geo.height() * 0.78)))
+            window.setGeometry(geo.left() + (geo.width() - width) // 2,
+                               geo.top() + (geo.height() - height) // 2, width, height)
+            window.show()
+            return
         # Sem showFullScreen: no macOS ele cria um Space próprio e a lousa sairia
         # de cima da apresentação. Ocupa a tela inteira como janela comum.
         target = screens[index] if index is not None and 0 <= index < len(screens) else screens[0]

@@ -1140,6 +1140,20 @@ class CursorWindow(QWidget):
 
     def _on_connection(self, state: ConnectionState, detail: str) -> None:
         self.state.on_connection(state, detail)
+        if (state is ConnectionState.CONNECTED and self.overlay
+                and self.waiting_for_phone is False and self.windowFlags() & Qt.WindowType.Window):
+            # O cartão QR começa como janela comum; só ativamos o overlay quando
+            # o celular conectar, preservando a seleção de outras janelas antes disso.
+            from desktop.interface.overlay_platform import make_overlay_window
+            target = self.screen()
+            if target is not None:
+                self.setGeometry(target.geometry())
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
+                                | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.Tool)
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+            make_overlay_window(self)
+            self.show()
         self.update()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:  # noqa: N802 (API do Qt)
