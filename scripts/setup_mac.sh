@@ -6,13 +6,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# O Qt não abre janelas quando o projeto está em pasta protegida do macOS (D011).
+# O projeto pode ficar na Mesa, em Documentos ou em Downloads. O macOS pode
+# pedir permissões de privacidade na primeira execução, mas isso não impede a
+# preparação do ambiente nem a abertura da janela do Qt.
 case "$(pwd -P)" in
   "$HOME/Desktop"*|"$HOME/Documents"*|"$HOME/Downloads"*)
-    echo "ERRO: o projeto está em $(pwd -P)." >&2
-    echo "Mesa, Documentos e Downloads são pastas protegidas do macOS e impedem a janela de abrir." >&2
-    echo "Mova o projeto (ex.: mv \"$(pwd -P)\" ~/Projetos/) e rode este script de novo." >&2
-    exit 1
+    echo "Aviso: o projeto está em uma pasta protegida do macOS: $(pwd -P)." >&2
+    echo "Se o macOS pedir acesso à câmera ou à rede, permita para o Terminal/Python." >&2
     ;;
 esac
 
