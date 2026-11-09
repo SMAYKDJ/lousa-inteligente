@@ -317,9 +317,8 @@ def run_gui(session: Session, simulate: bool = False,
             pen_mode: str = config.PEN_MODE, guided: bool = True) -> int:
     problem = protected_folder_problem(config.PROJECT_ROOT)
     if problem:
-        log.error(problem)
-        log.error("Alternativa sem janela: .venv/bin/python -m desktop.main --headless")
-        return 1
+        log.warning(problem)
+        log.warning("Continuando mesmo assim; se o macOS solicitar permissões, autorize o Terminal/Python em Ajustes do Sistema.")
 
     # Imports do Qt só no modo gráfico: o modo --headless não depende do PySide6.
     import signal
