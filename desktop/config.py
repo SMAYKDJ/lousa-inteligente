@@ -305,6 +305,12 @@ GESTURE_ENTER = 0.62
 GESTURE_EXIT = 0.42
 GESTURE_MARGIN = 0.08
 GESTURE_DEBOUNCE_S = 0.070
+#: D039 — confirmação maior para entrar em "aberta" e "fechada": nos logs reais
+#: (32 min, 6 gravações), 70 ms faz essas duas poses piscarem (< 0,2 s) em 9% e
+#: 14% das trocas; a 150 ms cai para 8% e 7%. "Apontar" (a mais usada, para
+#: escrever e selecionar) fica fora: piscava 6% dos dois jeitos, então mais
+#: confirmação só atrasaria sem ganho. docs/decisions.md D039.
+GESTURE_DEBOUNCE_BY_POSE_S = {"open": 0.150, "fist": 0.150}
 GESTURE_LOST_S = 0.25
 
 # --- Desenho (Fase 4, docs/drawing.md) -----------------------------------------

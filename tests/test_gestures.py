@@ -61,6 +61,20 @@ def test_switch_needs_debounce_time_not_frames():
     assert r.pose == "fist"
 
 
+def test_open_and_fist_need_longer_debounce_than_point(monkeypatch):
+    """D039: "aberta"/"fechada" confirmam em 150 ms; "apontar" continua em 70 ms
+    (nos logs reais, mais tempo não reduzia a piscada de apontar)."""
+    e = GestureEngine()
+    point, fist = synthetic_hand(0.5, 0.5, SP["point"]), synthetic_hand(0.5, 0.5, SP["fist"])
+    assert settle(e, *point).pose == "point"
+    for i in range(1, 5):  # 133 ms de punho: mais que os 70 ms antigos, menos que 150 ms
+        r = e.update([(fist[0], fist[1], "Right")], 1.0 + i / 30, ASPECT)[0]
+    assert r.pose == "point"
+    for i in range(5, 12):  # passa dos 150 ms: confirma
+        r = e.update([(fist[0], fist[1], "Right")], 1.0 + i / 30, ASPECT)[0]
+    assert r.pose == "fist"
+
+
 def test_lost_hand_is_forgotten():
     e = GestureEngine()
     settle(e, *synthetic_hand(0.5, 0.5, SP["point"]))

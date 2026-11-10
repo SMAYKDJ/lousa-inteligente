@@ -316,8 +316,12 @@ class GestureEngine:
         if want != cur:
             if tr.cand != want:
                 tr.cand, tr.cand_since = want, t
-            # cair para "nenhuma pose" espera mais, para a pose não piscar entre quadros
-            need = config.GESTURE_DEBOUNCE_S * (1.6 if want is None else 1.0)
+            # cair para "nenhuma pose" espera mais, para a pose não piscar entre quadros;
+            # "aberta"/"fechada" têm sua própria confirmação, maior (D039)
+            if want is None:
+                need = config.GESTURE_DEBOUNCE_S * 1.6
+            else:
+                need = config.GESTURE_DEBOUNCE_BY_POSE_S.get(want, config.GESTURE_DEBOUNCE_S)
             if t - tr.cand_since >= need:
                 tr.pose = want
         else:

@@ -502,3 +502,12 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
   - a calibração automática não viu os marcadores nos 20 s e caiu para os cantos: em 367 verificações, só 13 viram algum marcador;
   - durante o estudo, um falso "celular mexeu" (resposta 0,11, perto do mínimo 0,08) deixou os cantos visíveis por 139 s.
   - Os dois ficam para investigar.
+
+## D039 — Confirmação por gesto: "aberta" e "fechada" mais lentas que "apontar"
+
+- **Pergunta do usuário (2026-11-10):** ao ver um laboratório de mão/OSC de terceiros (Meta Quest 3) que usa tempos de confirmação diferentes por gesto (42/72/96/340 ms), se valeria ajustar aqui.
+- **Medido nos logs reais** (6 gravações com `--record`, 32 min de mão única): com a confirmação atual (70 ms para todas as poses), "fechada" pisca (dura < 0,2 s) em 14% das trocas e "aberta" em 9%; "apontar", a pose mais usada (escrever, selecionar), já piscava só 6% — e continuava em 6–7% mesmo testando 50 a 200 ms, ou seja, mais tempo não ajudava nela.
+- **Decisão:** confirmação por gesto (`GESTURE_DEBOUNCE_BY_POSE_S`): "aberta" e "fechada" passam a confirmar em 150 ms; "apontar" continua em 70 ms (`GESTURE_DEBOUNCE_S`), sem o atraso que não trazia ganho. Com isso, nos mesmos logs, "fechada" caiu de 14% para 7% de piscada e "aberta" de 9% para 8%, sem atrasar o apontar.
+- **Por que só essas duas:** "fechada" controla o zoom de duas mãos (D038) e "aberta" solta o desenho segurado (D035); um atraso de 80 ms além do antigo é imperceptível para soltar, e evita trocar de gesto por acidente no meio do movimento.
+- **Testes:** `test_open_and_fist_need_longer_debounce_than_point` (133 ms de punho ainda não confirma; depois de 150 ms confirma). 507 testes passando.
+- **Status:** implementado; teste real pendente · **Data:** 2026-11-10
