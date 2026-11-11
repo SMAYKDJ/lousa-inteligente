@@ -511,3 +511,19 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
 - **Por que só essas duas:** "fechada" controla o zoom de duas mãos (D038) e "aberta" solta o desenho segurado (D035); um atraso de 80 ms além do antigo é imperceptível para soltar, e evita trocar de gesto por acidente no meio do movimento.
 - **Testes:** `test_open_and_fist_need_longer_debounce_than_point` (133 ms de punho ainda não confirma; depois de 150 ms confirma). 507 testes passando.
 - **Status:** implementado; teste real pendente · **Data:** 2026-11-10
+
+## D040 — Caneta física (mouse sem fio) como entrada alternativa, convivendo com a mão (proposta)
+
+- **Ideia do usuário (2026-11-10):** transformar um mouse sem fio numa caneta, com um leitor (acionado por um botão/microchave) na ponta, para escrever na lousa.
+- **Problema que resolve:** o estudo do toque (D029) mostrou que a câmera do celular sozinha não distingue com segurança dedo encostado de dedo a ~2 cm. Um clique de mouse é um sinal elétrico sem ambiguidade — resolvido ou não resolvido, sem "quase".
+- **Decisões do usuário, entre as alternativas apresentadas:**
+  - **Posição:** pelo sensor óptico do próprio mouse arrastando na lousa (movimento relativo), não pela câmera enxergando a ponta.
+  - **Caneta × mão:** convivem; o professor escolhe a cada momento qual usar, sem travar modo.
+- **Como as duas entradas se encaixam:** a mão continua dando a posição absoluta (aponta, "teletransporta" o cursor para onde quiser, abre a sidebar). A caneta, com o mouse arrastando, só soma movimento relativo a partir de onde o cursor já está — o que funciona bem exatamente porque a mão resolve o "pular para um ponto novo" antes de a caneta assumir o traço fino.
+- **Regra proposta para não ler ruído:** só aplicar o movimento do mouse ao cursor enquanto a chave da ponta estiver pressionada (tocando a lousa); solto, o sensor pode captar nada ou lixo e isso não deve mexer no cursor. Mantém o princípio de não tratar toda leitura como interação válida (§5.4 do CLAUDE.md).
+- **Riscos a validar antes de montar a caneta:**
+  1. Sensor óptico em lousa branca (superfície lisa/brilhante) pode não rastrear bem — mouses ópticos variam muito nisso; alguns a laser rastreiam pior em superfície muito lisa.
+  2. Contagens do mouse (DPI) precisam de uma escala para que arrastar X cm reais na lousa mova o traço X cm na projeção — provavelmente um passo de calibração novo (arrastar de uma borda a outra uma vez).
+  3. Construção física (microchave na ponta, ignorar o sensor de movimento quando não há contato) é trabalho de hardware do usuário; o lado de software (ler o mouse como uma entrada nova, paralela à câmera) fica para depois da validação.
+- **Primeiro passo proposto (sem solda, 2 minutos):** antes de montar a caneta, testar o mouse sem fio comum arrastando a mão com ele encostado na lousa, vendo se o cursor acompanha de forma suave ou se trava/pula. Se não rastrear bem na lousa como está, vale testar com uma fita adesiva texturizada ou um pad fino colado na ponta.
+- **Status:** proposta registrada; aguardando o teste da superfície antes de qualquer modificação física ou código novo · **Data:** 2026-11-10
