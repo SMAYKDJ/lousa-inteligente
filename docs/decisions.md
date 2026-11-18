@@ -527,3 +527,17 @@ Formato de cada entrada: problema → alternativas → decisão → impactos →
   3. Construção física (microchave na ponta, ignorar o sensor de movimento quando não há contato) é trabalho de hardware do usuário; o lado de software (ler o mouse como uma entrada nova, paralela à câmera) fica para depois da validação.
 - **Primeiro passo proposto (sem solda, 2 minutos):** antes de montar a caneta, testar o mouse sem fio comum arrastando a mão com ele encostado na lousa, vendo se o cursor acompanha de forma suave ou se trava/pula. Se não rastrear bem na lousa como está, vale testar com uma fita adesiva texturizada ou um pad fino colado na ponta.
 - **Status:** proposta registrada; aguardando o teste da superfície antes de qualquer modificação física ou código novo · **Data:** 2026-11-10
+
+## D041 — Lousa tomando a tela única; ponto na ponta do dedo durante a calibração
+
+- **Relato do usuário (2026-11-18), depois de destravar a conexão celular↔notebook e o Python 3.11:**
+  1. "a tela do qrcode esta sempre em primeiro plano em tela cheia e impede de ver outras janelas atras"
+  2. "durante a calibracao um ponto vermelho deve aparecer na ponta do dedo para indicar onde estou apontando"
+- **Causa do item 1:** `--overlay --screen auto`, com só a tela do próprio notebook (sem projetor), caía na mesma tela 0 e aplicava o mesmo tratamento "por cima de tudo" pensado para a TV/projetor — nível de janela do sistema acima até de apps em tela cheia (D-overlay_platform, nível 1000), reforçado a cada 2 s. Sozinho isso é exatamente o que a lousa precisa para não ficar atrás do PowerPoint/Keynote projetado; numa tela só, é a mesma tela que o professor usa para tudo o mais, e o reforço a cada 2 s trazia a janela de volta mesmo depois de ele trocar de aplicativo de propósito.
+- **Correção:** o "sempre por cima" (e o reforço periódico) só se aplica quando há uma **segunda** tela — ou seja, quando existe mesmo um projetor/TV para a lousa ficar por cima. Com uma tela só, a janela segue sem moldura e clicável através (continua não roubando cliques), mas entra na ordem normal do sistema operacional — some ao trocar de app, como qualquer janela.
+- **Causa/pedido do item 2:** a calibração já mostrava se via o dedo (`finger_seen`, o anel enchendo), mas não *onde* o sistema achava que a ponta estava — o professor não tinha como corrigir a mira em tempo real.
+- **O que foi adicionado:** um ponto vermelho na tela que segue o dedo.
+  - Na **verificação** (e no toque único da calibração automática), já existe homografia — o ponto é exato (bolinha cheia).
+  - Nos **4 cantos**, a homografia é justamente o que está sendo medido — ainda não existe. O ponto aí é uma prévia aproximada (câmera_norm bruta, sem transformação; bolinha vazada, para não parecer tão certeira quanto a calibrada) — não bate exatamente com o anel do alvo, mas dá a direção: se o professor move a mão para a direita, o ponto também vai para a direita, confirmando que o sistema está respondendo.
+- **Testes:** D041 cobre as duas pontas — `place_on_screen`/`configure_overlay` com uma e duas telas (`test_main.py`), e a prévia aproximada × calibrada do ponto do dedo, incluindo ele desaparecer quando a mão sai (`test_calibration.py`). 514 testes passando.
+- **Status:** implementado; teste real pendente (próxima vez no Mac) · **Data:** 2026-11-18

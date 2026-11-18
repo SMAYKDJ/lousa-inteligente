@@ -276,3 +276,36 @@ def test_accuracy_test_repeats_point_without_hand():
     run.hold(None, 7.1)
     assert test.view(run.now).step == 1 and "Não vi o dedo" in test.view(run.now).message
     assert "Teste de precisão — ponto 1 de 9" == test.view(run.now).title
+
+
+def test_tip_preview_during_corners_is_approximate_not_calibrated():
+    """D041: nos 4 cantos ainda não há homografia — o ponto é só a câmera_norm
+    bruta, marcada como não calibrada (bolinha vazada na tela)."""
+    run = new_run()
+    tip = C(0.3, 0.6)
+    run.s.on_tip(tip, run.now + 0.01)
+    view = run.s.view(run.now + 0.01)
+    assert view.phase is Phase.CORNERS
+    assert view.tip == SurfacePoint(0.3, 0.6)
+    assert view.tip_calibrated is False
+
+
+def test_tip_preview_during_verify_uses_real_homography():
+    """Na verificação já existe homografia: o ponto mostrado é a posição real."""
+    run = new_run()
+    for target in corner_targets():
+        run.hold(camera_of(target), run.s.countdown_s + 0.1)
+    assert run.s.phase is Phase.VERIFY
+    probe = SurfacePoint(0.5, 0.5)
+    run.s.on_tip(camera_of(probe), run.now + 0.01)
+    view = run.s.view(run.now + 0.01)
+    assert view.tip_calibrated is True
+    assert view.tip.x == pytest.approx(probe.x, abs=0.01)
+    assert view.tip.y == pytest.approx(probe.y, abs=0.01)
+
+
+def test_tip_preview_disappears_after_finger_leaves():
+    run = new_run()
+    run.s.on_tip(C(0.5, 0.5), run.now + 0.01)
+    assert run.s.view(run.now + 0.01).tip is not None
+    assert run.s.view(run.now + 0.5).tip is None

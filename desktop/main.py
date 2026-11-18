@@ -221,12 +221,21 @@ def run_headless(session: Session, session_log: SessionLog | None = None,
         processor.stop()
 
 
-def configure_overlay(window) -> None:
-    """Lousa transparente, sem moldura, sempre por cima e que ignora o mouse (Fase 3, etapa 3.0)."""
+def configure_overlay(window, always_on_top: bool = True) -> None:
+    """Lousa transparente, sem moldura, e que ignora o mouse (Fase 3, etapa 3.0).
+
+    D041: "sempre por cima" só faz sentido quando há uma SEGUNDA tela (o
+    projetor/TV) — é ela que precisa ficar por cima da apresentação. Com uma
+    tela só (testando no próprio notebook), isso tomaria conta da única tela
+    que o professor tem para tudo o mais; aí a janela some assim que outro
+    aplicativo ganha foco, como qualquer janela comum.
+    """
     from PySide6.QtCore import Qt
 
-    window.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
-                          | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.Tool)
+    flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowTransparentForInput
+    if always_on_top:
+        flags |= Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool
+    window.setWindowFlags(flags)
     window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     window.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
 
@@ -260,6 +269,12 @@ def place_on_screen(window, screens, index: int | str | None, overlay: bool = Fa
         target = screens[index] if index is not None and 0 <= index < len(screens) else screens[0]
         window.setGeometry(target.geometry())
         window.show()
+        if len(screens) <= 1:
+            # D041: uma tela só — não há apresentação para ficar por cima, e essa
+            # mesma tela é onde o professor faz tudo o mais. Não aplica o truque
+            # de ficar sempre por cima de tudo (nível de janela do sistema).
+            log.info("Uma só tela: a lousa não fica forçada por cima (D041).")
+            return
         from desktop.interface.overlay_platform import make_overlay_window
 
         applied = make_overlay_window(window)
@@ -330,8 +345,9 @@ def run_gui(session: Session, simulate: bool = False,
                           annotations_dir=None if simulate else config.ANNOTATIONS_DIR,
                           prefs_path=None if simulate else config.PREFS_PATH,
                           calibration_path=None if simulate else config.CALIBRATION_PATH)
+    has_second_screen = len(qt_app.screens()) > 1  # D041: só há "por cima de tudo" com projetor
     if overlay:
-        configure_overlay(window)
+        configure_overlay(window, always_on_top=has_second_screen)
         if not preview:
             log.warning("--overlay sem a janela de diagnóstico: não haverá como usar as teclas "
                         "C/G/P/Q (a lousa ignora o teclado). Use Ctrl+C no terminal para sair.")
@@ -358,8 +374,10 @@ def run_gui(session: Session, simulate: bool = False,
     keepalive.start(200)
 
     place_on_screen(window, qt_app.screens(), screen, overlay=overlay)
-    if overlay:
+    if overlay and has_second_screen:
         # macOS: reafirma a lousa na frente a cada 2 s (ao trocar de app ou de Space).
+        # Só com projetor (D041): numa tela só isso tomaria a tela de volta do
+        # professor a cada 2 s, mesmo depois de ele trocar de aplicativo de propósito.
         from desktop.interface.overlay_platform import keep_on_top
 
         on_top_timer = QTimer()

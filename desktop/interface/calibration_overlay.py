@@ -22,9 +22,11 @@ DONE = QColor("#3ccf8e")
 TEXT = QColor("#e8ecf1")
 MUTED = QColor("#8a94a3")
 ALERT = QColor("#ff5a5f")
+TIP_DOT = QColor("#ff3b30")  # D041: ponto que segue o dedo, para dar noção de direção
 
 TARGET_ARM_PX = 28
 RING_RADIUS_PX = 46
+TIP_DOT_RADIUS_PX = 10
 
 
 def _to_px(target, width: float, height: float) -> QPointF:
@@ -74,7 +76,20 @@ def draw_calibration(painter: QPainter, view: CalibrationView, width: float, hei
         painter.drawText(QRectF(number_center.x() - 70, number_center.y() - 45, 140, 90),
                          Qt.AlignmentFlag.AlignCenter, str(max(1, math.ceil(view.remaining_s))))
 
+    if view.tip is not None:
+        _draw_tip(painter, view.tip, view.tip_calibrated, width, height)
+
     _draw_instructions(painter, view, width, height, prefix)
+
+
+def _draw_tip(painter: QPainter, tip, calibrated: bool, width: float, height: float) -> None:
+    """D041: onde o sistema vê o dedo agora. Sem homografia ainda (fase dos 4
+    cantos), é só uma prévia aproximada — meio vazado, para não parecer tão
+    certeira quanto o ponto calibrado da verificação (cheio)."""
+    center = _to_px(tip, width, height)
+    painter.setPen(QPen(TIP_DOT, 3))
+    painter.setBrush(TIP_DOT if calibrated else Qt.BrushStyle.NoBrush)
+    painter.drawEllipse(center, TIP_DOT_RADIUS_PX, TIP_DOT_RADIUS_PX)
 
 
 def _draw_instructions(painter: QPainter, view: CalibrationView, width: float, height: float,

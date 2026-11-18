@@ -69,6 +69,8 @@ class CalibrationView:
     finger_seen: bool
     message: str
     captured: tuple[SurfacePoint, ...]  # alvos já aceitos (para pintar de verde)
+    tip: SurfacePoint | None = None  # D041: onde desenhar o ponto do dedo (ver `view()`)
+    tip_calibrated: bool = False  # True = veio da homografia; False = prévia aproximada
     title: str = ""  # se preenchido, substitui o título padrão (ex.: teste de precisão)
 
 
@@ -150,11 +152,32 @@ class CalibrationSession:
         """Cantos já aceitos nesta tentativa, em camera_norm (para o diagnóstico)."""
         return list(self._captured)
 
+    def _tip_view(self, now: float) -> tuple[SurfacePoint | None, bool]:
+        """D041: ponto vermelho na tela, indicando onde o sistema enxerga o dedo.
+
+        Na verificação (e no toque único da calibração automática) já existe
+        homografia — a posição é exata. Nos 4 cantos ainda não existe (é
+        justamente o que está sendo medido): o ponto aí é só uma prévia
+        aproximada (câmera_norm bruto), que acompanha a direção do dedo mas
+        não bate com o anel do alvo — serve para o professor ver que o
+        sistema está respondendo, não para apontar com precisão.
+        """
+        if self._last_tip is None or now - self._last_tip_at >= 0.3:
+            return None, False
+        if self._homography is not None:
+            surface = self._homography.to_surface(self._last_tip)
+            if surface is not None:
+                return surface, True
+        x = min(1.0, max(0.0, self._last_tip.x))
+        y = min(1.0, max(0.0, self._last_tip.y))
+        return SurfacePoint(x, y), False
+
     def view(self, now: float) -> CalibrationView:
         elapsed = now - self._step_start
         verify = self.phase is Phase.VERIFY
         target = VERIFY_TARGET if verify else (
             self.targets[self._index] if self.phase is Phase.CORNERS else None)
+        tip, tip_calibrated = self._tip_view(now)
         return CalibrationView(
             phase=self.phase,
             step=self._step_number(),
@@ -167,6 +190,8 @@ class CalibrationSession:
             finger_seen=now - self._last_tip_at < 0.3,
             message=self.message,
             captured=tuple(self.targets[: len(self._captured)]),
+            tip=tip,
+            tip_calibrated=tip_calibrated,
             title="Calibração automática: encoste uma vez no alvo do centro"
             if (verify and self._from_markers) else "",
         )
